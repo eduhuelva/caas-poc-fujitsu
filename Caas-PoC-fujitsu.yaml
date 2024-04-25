@@ -53,7 +53,7 @@ spec:
         - containerPort: 8080
         env:
         - name: MESSAGE
-          value: CaaS PoC Fujitsu!
+          value: CaaS PoC Fujitsu Team!
         - name: PORT
           value: "8080"
         - name: KUBERNETES_NAMESPACE
