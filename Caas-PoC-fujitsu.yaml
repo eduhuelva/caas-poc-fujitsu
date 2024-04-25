@@ -32,7 +32,7 @@ kind: Deployment
 metadata:
   name: deployment-caas-poc-fujitsu
 spec:
-  replicas: 3 
+  replicas: 1 
   selector:
     matchLabels:
       app: caas-poc-fujitsu
