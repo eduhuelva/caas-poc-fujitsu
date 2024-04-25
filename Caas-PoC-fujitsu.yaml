@@ -1,0 +1,123 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-caas-poc-fujitsu
+  namespace: caas-poc-fujitsu
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: ontap-nfs
+---
+# hello-kubernetes.custom-message.yaml
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-caas-poc-fujitsu
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: caas-poc-fujitsu
+---
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-caas-poc-fujitsu
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: caas-poc-fujitsu
+  template:
+    metadata:
+      labels:
+        app: caas-poc-fujitsu
+    spec:
+      #persistent volume
+      volumes:
+      - name: pv-caas-poc-fujitsu
+        persistentVolumeClaim:
+          claimName: pvc-caas-poc-fujitsu
+      containers:
+      - name: pod-caas-poc-fujitsu
+        image: harbor.frontedge.net/caas-poc-fujitsu/caas-poc-fujitsu
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MESSAGE
+          value: CaaS PoC Fujitsu!
+        - name: PORT
+          value: "8080"
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - mountPath: /data
+          name: pv-caas-poc-fujitsu
+        resources:
+        #resources to autoscaler
+          requests:
+            memory: "64Mi"
+            cpu: "200m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+#ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-caas-poc-fujitsu
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: caas-poc-fujitsu.apps.k8s-001.frontedge.net
+    http:
+      paths:
+      - backend:
+          service:
+            name: service-caas-poc-fujitsu
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+status:
+  loadBalancer: {}
+---
+#Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: autoscaler-caas-poc-fujitsu
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deployment-caas-poc-fujitsu
+  minReplicas: 1
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+---
