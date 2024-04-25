@@ -1,0 +1,18 @@
+{
+  "name": "caas-poc-fujitsu",
+  "version": "2.0.0",
+  "description": "Caas PoC Fujitsu!",
+  "author": "Fujitsu_Team",
+  "license": "-",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-handlebars": "^5.2.1",
+    "express-pino-logger": "^6.0.0",
+    "handlebars": "^4.7.7",
+    "pino": "^6.11.2"
+  }
+}
