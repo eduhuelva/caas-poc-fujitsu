@@ -32,7 +32,7 @@ kind: Deployment
 metadata:
   name: deployment-caas-poc-fujitsu
 spec:
-  replicas: 1 
+  replicas: 2 
   selector:
     matchLabels:
       app: caas-poc-fujitsu
@@ -112,7 +112,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: deployment-caas-poc-fujitsu
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 6
   metrics:
   - type: Resource
